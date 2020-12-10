@@ -28,6 +28,24 @@ abstract class AuthRepository {
     return await loginWithPhone(request: request);
   }
 
+  Future<void> executeLoginWithPhone2({
+    @required LoginPhoneRequest request,
+    @required Function(OtpEntity) onSuccess,
+    @required Function(Failure) onError,
+  }) async {
+    if(!await hasConnectivity()){
+      onError(NoInternetFailure());
+      return;
+    }
+
+    if(!ValidatorHelper.isPhoneNumber(request.phoneNumber)){
+      onError(InvalidFormatFailure(code: InvalidFormatFailure.phone));
+      return;
+    }
+
+    await loginWithPhone2(request: request, onSuccess: onSuccess, onError: onError);
+  }
+
   Future<Response<Failure, CustomerEntity>> executeLoginWithUsername({@required LoginUsernameRequest request}) async {
     if(!await hasConnectivity()){
       return Response.error(NoInternetFailure());
@@ -70,6 +88,13 @@ abstract class AuthRepository {
 
   @protected
   Future<Response<Failure, OtpEntity>> loginWithPhone({@required LoginPhoneRequest request});
+
+  @protected
+  Future<Response<Failure, OtpEntity>> loginWithPhone2({
+    @required LoginPhoneRequest request,
+    @required Function(OtpEntity) onSuccess,
+    @required Function(Failure) onError,
+  });
 
   @protected
   Future<Response<Failure, CustomerEntity>> loginWithUsername({@required LoginUsernameRequest request});
